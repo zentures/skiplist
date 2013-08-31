@@ -202,6 +202,48 @@ func TestInsertStringDescending(t *testing.T) {
 	}
 }
 
+func BenchmarkInsertTimeDescending(b *testing.B) {
+	list := New(builtinGreaterThan)
+	keys := make([]int64, b.N)
+
+	for i := 0; i < b.N; i++ {
+		keys[i] = time.Now().UnixNano()
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if err := list.Insert(keys[i], i); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	//for p := list.headNode.next[0]; p != nil; p = p.next[0] {
+	//	fmt.Println(p.key.(int64))
+	//}
+}
+
+func BenchmarkInsertTimeAscending(b *testing.B) {
+	list := New(builtinLessThan)
+	keys := make([]int64, b.N)
+
+	for i := 0; i < b.N; i++ {
+		keys[i] = time.Now().UnixNano()
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if err := list.Insert(keys[i], i); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	//for p := list.headNode.next[0]; p != nil; p = p.next[0] {
+	//	fmt.Println(p.key.(int64))
+	//}
+}
+
 func BenchmarkInsertInt(b *testing.B) {
 	list := New(builtinLessThan)
 	keys := make([]int, b.N)
@@ -252,23 +294,3 @@ func BenchmarkInsertString(b *testing.B) {
 	}
 }
 
-func BenchmarkInsertTimeDescending(b *testing.B) {
-	list := New(builtinGreaterThan)
-	keys := make([]int64, b.N)
-
-	for i := 0; i < b.N; i++ {
-		keys[i] = time.Now().UnixNano()
-	}
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
-			b.Fatal(err)
-		}
-	}
-
-	//for p := list.headNode.next[0]; p != nil; p = p.next[0] {
-	//	fmt.Println(p.key.(int64))
-	//}
-}
