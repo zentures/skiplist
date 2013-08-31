@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	builtinLessThan Comparator = func(k1, k2 interface{}) (bool, error) {
+	BuiltinLessThan Comparator = func(k1, k2 interface{}) (bool, error) {
 		t2 := reflect.TypeOf(k2).Name()
 
 		switch k1 := k1.(type) {
@@ -104,8 +104,8 @@ var (
 		t1 := reflect.TypeOf(k1).Name()
 		return false, fmt.Errorf("reducedb/skiplist:builtinLessThan: unsupported types for k1.(%s) and k2.(%s)", t1, t2)
 	}
-	
-	builtinGreaterThan Comparator = func(k1, k2 interface{}) (bool, error) {
+
+	BuiltinGreaterThan Comparator = func(k1, k2 interface{}) (bool, error) {
 		t2 := reflect.TypeOf(k2).Name()
 
 		switch k1 := k1.(type) {
@@ -198,7 +198,7 @@ var (
 		return false, fmt.Errorf("reducedb/skiplist:builtinGreaterThan: unsupported types for k1.(%s) and k2.(%s)", t1, t2)
 	}	
 	
-	builtinEqual Comparator = func(k1, k2 interface{}) (bool, error) {
+	BuiltinEqual Comparator = func(k1, k2 interface{}) (bool, error) {
 		t2 := reflect.TypeOf(k2).Name()
 
 		switch k1 := k1.(type) {
