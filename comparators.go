@@ -14,7 +14,7 @@ import (
 var (
 	BuiltinLessThan Comparator = func(k1, k2 interface{}) (bool, error) {
 		if reflect.TypeOf(k1) != reflect.TypeOf(k2) {
-			return false, fmt.Errorf("reducedb/skiplist:builtinLessThan: k1.(%s) and k2.(%s) have different types",
+			return false, fmt.Errorf("skiplist/BuiltinLessThan: k1.(%s) and k2.(%s) have different types",
 				reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 		}
 
@@ -62,13 +62,13 @@ var (
 			return k1 < k2.(uintptr), nil
 		}
 
-		return false, fmt.Errorf("reducedb/skiplist:builtinLessThan: unsupported types for k1.(%s) and k2.(%s)",
+		return false, fmt.Errorf("skiplist/BuiltinLessThan: unsupported types for k1.(%s) and k2.(%s)",
 			reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 	}
 
 	BuiltinGreaterThan Comparator = func(k1, k2 interface{}) (bool, error) {
 		if reflect.TypeOf(k1) != reflect.TypeOf(k2) {
-			return false, fmt.Errorf("reducedb/skiplist:builtinGreaterThan: k1.(%s) and k2.(%s) have different types",
+			return false, fmt.Errorf("skiplist/BuiltinGreaterThan: k1.(%s) and k2.(%s) have different types",
 				reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 		}
 	
@@ -116,13 +116,13 @@ var (
 			return k1 > k2.(uintptr), nil
 		}
 	
-		return false, fmt.Errorf("reducedb/skiplist:builtinGreaterThan: unsupported types for k1.(%s) and k2.(%s)",
+		return false, fmt.Errorf("skiplist/BuiltinGreaterThan: unsupported types for k1.(%s) and k2.(%s)",
 			reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 	}
 
 	BuiltinEqual Comparator = func(k1, k2 interface{}) (bool, error) {
 		if reflect.TypeOf(k1) != reflect.TypeOf(k2) {
-			return false, fmt.Errorf("reducedb/skiplist:builtinEqual: k1.(%s) and k2.(%s) have different types",
+			return false, fmt.Errorf("skiplist/BuiltinEqual: k1.(%s) and k2.(%s) have different types",
 				reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 		}
 
@@ -170,7 +170,7 @@ var (
 			return k1 == k2.(uintptr), nil
 		}
 
-		return false, fmt.Errorf("reducedb/skiplist:builtinLessThan: unsupported types for k1.(%s) and k2.(%s)",
+		return false, fmt.Errorf("skiplist/BuiltinLessThan: unsupported types for k1.(%s) and k2.(%s)",
 			reflect.TypeOf(k1).Name(), reflect.TypeOf(k2).Name())
 	}
 )

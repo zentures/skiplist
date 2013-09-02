@@ -13,6 +13,7 @@ import (
 	"errors"
 	"math"
 	"fmt"
+	"reflect"
 )
 
 var (
@@ -55,13 +56,15 @@ type Skiplist struct {
 
 	// Using Search Fingers
 	// Reference: http://drum.lib.umd.edu/bitstream/1903/544/2/CS-TR-2286.1.pdf - section 3.1
-	fingers []*node
+	// We keep two sets of fingers as search and insert localities are likely different, especially if
+	// the insert keys are close to each other
+	insertFingers []*node
+
+	// fingers for selecting nodes
+	selectFingers []*node
 
 	// Total number of nodes inserted
 	count int
-
-	// Keep track of the number of nodes for each level
-	levelCount []int
 
 	// Comparison function
 	compare Comparator
@@ -77,8 +80,8 @@ func New(compare Comparator) *Skiplist {
 	return &Skiplist{
 		ip: ip,
 		maxLevel: l,
-		levelCount: make([]int, l),
-		fingers: make([]*node, l),
+		insertFingers: make([]*node, l),
+		selectFingers: make([]*node, l),
 		level: 1,
 		count: 0,
 		compare: compare,
@@ -87,18 +90,39 @@ func New(compare Comparator) *Skiplist {
 }
 
 func (this *Skiplist) SetCompare(compare Comparator) (err error) {
+	if compare == nil {
+		return errors.New("skiplist/SetCompare: trying to set comparator to nil")
+	}
 	this.compare = compare
 	return nil
 }
 
 func (this *Skiplist) SetMaxLevel(l int) (err error) {
+	if l < 1 {
+		return errors.New("skiplist/SetCompare: max level must be greater than zero (0)")
+	}
 	this.maxLevel = l
 	return nil
 }
 
 func (this *Skiplist) SetProbability(p float32) (err error) {
+	if p > 1 {
+		p = 1
+	}
 	this.ip = int(math.Ceil(1/float64(p)))
 	return nil
+}
+
+func (this *Skiplist) Close() (err error) {
+	return nil
+}
+
+func (this *Skiplist) Count() int {
+	return this.count
+}
+
+func (this *Skiplist) Level() int {
+	return this.level
 }
 
 // Choose the new node's level, branching with p (1/ip) probability, with no regards to N (size of list)
@@ -112,32 +136,23 @@ func (this *Skiplist) newNodeLevel() int {
 	return h
 }
 
-func (this *Skiplist) updateSearchFingers(key interface{}) (err error) {
+func (this *Skiplist) updateSearchFingers(key interface{}, fingers []*node) (err error) {
 	startLevel := this.level-1
 	startNode := this.headNode
 
-	//log.Println("startLevel =", startLevel)
-	//log.Println("startNode =", startNode)
-
-	// Using Search Fingers
-	// Reference: http://drum.lib.umd.edu/bitstream/1903/544/2/CS-TR-2286.1.pdf - section 3.1
-	// if this.fingers[0] != nil && this.fingers[0].key < key {
-	//log.Println("this.fingers[0] = ", this.fingers[0])
-
-
-	if this.fingers[0] != nil && this.fingers[0].key != nil {
-		if less, err := this.compare(this.fingers[0].key, key); err != nil {
+	if fingers[0] != nil && fingers[0].key != nil {
+		if less, err := this.compare(fingers[0].key, key); err != nil {
 			return err
 		} else if less {
 			// Move forward, find the highest level s.t. the next node's key < key
 			for l := 1; l < this.level; l++ {
-				if this.fingers[l].next[l] != nil && this.fingers[l].key != nil {
-					// If the next node is not nil and this.fingers[l].key >= key
-					if less, err := this.compare(this.fingers[l].key, key); err != nil {
+				if fingers[l].next[l] != nil && fingers[l].key != nil {
+					// If the next node is not nil and fingers[l].key >= key
+					if less, err := this.compare(fingers[l].key, key); err != nil {
 						return err
 					} else if less == false {
 						startLevel = l - 1
-						startNode = this.fingers[l]
+						startNode = fingers[l]
 						break
 					}
 				}
@@ -147,13 +162,13 @@ func (this *Skiplist) updateSearchFingers(key interface{}) (err error) {
 			// Move backward, find the lowest level s.t. the node's timestamp < t
 			for l := 1; l < this.level; l++ {
 				//log.Println("inside for loop, level =", l)
-				// this.fingers[l].key < key
-				if this.fingers[l].key != nil {
-					if less, err := this.compare(this.fingers[l].key, key); err != nil {
+				// fingers[l].key < key
+				if fingers[l].key != nil {
+					if less, err := this.compare(fingers[l].key, key); err != nil {
 						return err
 					} else if less {
 						startLevel = l
-						startNode = this.fingers[l]
+						startNode = fingers[l]
 						break
 					}
 				}
@@ -165,10 +180,7 @@ func (this *Skiplist) updateSearchFingers(key interface{}) (err error) {
 	// we find a node that has a timestamp that's >= the timestamp t, or the end of the list
 	// l = level, p = ptr to node during traversal
 	for l, p := startLevel, startNode; l >= 0; l-- {
-		//log.Println("inside for l,p loop, l =", l)
-		//log.Println("inside for l,p loop, p =", p)
 		n := p.next[l]
-		//log.Println(n)
 
 		for {
 			if n == nil {
@@ -194,13 +206,20 @@ func (this *Skiplist) updateSearchFingers(key interface{}) (err error) {
 			p, n = n, n.next[l]
 		}
 
-		this.fingers[l] = p
+		fingers[l] = p
 	}
 
 	return nil
 }
 
 func (this *Skiplist) Insert(key, value interface{}) (err error) {
+	if key == nil {
+		return errors.New("skiplist/Insert: key is nil")
+	}
+
+	if this.compare == nil {
+		return errors.New("skiplist/Insert: comparator is not set (== nil)")
+	}
 
 	// Create new node
 	l := this.newNodeLevel()
@@ -208,45 +227,38 @@ func (this *Skiplist) Insert(key, value interface{}) (err error) {
 	n.SetKey(key)
 	n.SetValue(value)
 
-	// If each Skiplist is single thread only, then we really don't need this..but for now let's keep
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
-	//log.Println("new node level =", l)
-	this.levelCount[l-1]++
-
-	//log.Println("this.finger[0] =", this.fingers[0])
-	// Find the position where we should insert the node by updating the search fingers using the key
-	// Search fingers will be updated with the rightmost element of each level that is left of the element
+	//log.Println("this.finger[0] =", this.insertFingers[0])
+	// Find the position where we should insert the node by updating the search insertFingers using the key
+	// Search insertFingers will be updated with the rightmost element of each level that is left of the element
 	// that's greater than or equal to key.
-	// In other words, we are inserting the new node to the right of the search fingers.
-	if err = this.updateSearchFingers(key); err != nil {
-		return errors.New("reducedb/Skiplist:insert: cannot find insert position, " + err.Error())
+	// In other words, we are inserting the new node to the right of the search insertFingers.
+	if err = this.updateSearchFingers(key, this.insertFingers); err != nil {
+		return errors.New("skiplist/insert: cannot find insert position, " + err.Error())
 	}
 
-	//log.Println("search fingers =", this.fingers)
+	//log.Println("search insertFingers =", this.insertFingers)
 	// Raise the level of the skiplist if the new level is higher than the existing list level
 	// So for levels higher than the current list level, the previous node is headNode for that level
 	if this.level < l {
 		for i := this.level; i < l; i++ {
-			//log.Println("before ---- ", this.fingers)
-			this.fingers[i] = this.headNode
-			//log.Println("after  ---- ", this.fingers)
+			//log.Println("before ---- ", this.insertFingers)
+			this.insertFingers[i] = this.headNode
+			//log.Println("after  ---- ", this.insertFingers)
 		}
 		this.level = l
 		//log.Println("new this.level =", l)
-		//log.Println("this.fingers =", this.fingers)
+		//log.Println("this.insertFingers =", this.insertFingers)
 	}
 
 	// Finally insert the node into the skiplist
 	for i := 0; i < l; i++ {
 		// new node points forward to the previous node's next node
 		// previous node's next node points to the new node
-		n.next[i], this.fingers[i].next[i] = this.fingers[i].next[i], n
+		n.next[i], this.insertFingers[i].next[i] = this.insertFingers[i].next[i], n
 	}
-
-	//log.Println("this.headNode.next =", this.headNode.next)
-	//log.Println("            n.next =", n.next)
 
 	// Adding to the count
 	this.count++
@@ -254,37 +266,143 @@ func (this *Skiplist) Insert(key, value interface{}) (err error) {
 	return nil
 }
 
-func (this *Skiplist) Close() (err error) {
-	return nil
+// Select a list of nodes that match the key. The results are stored in the array pointed to by results
+func (this *Skiplist) Select(key interface{}) (iter *Iterator, err error) {
+	return this.SelectRange(key, key)
 }
 
-func (this *Skiplist) Count() int {
-	return this.count
+func (this *Skiplist) SelectRange(key1, key2 interface{}) (iter *Iterator, err error) {
+	if key1 == nil || key2 == nil {
+		return nil, errors.New("skiplist/SelectRange: key1 or key2 is nil")
+	}
+
+	if reflect.TypeOf(key1) != reflect.TypeOf(key2) {
+		return nil, fmt.Errorf("skiplist/SelectRange: k1.(%s) and k2.(%s) have different types",
+			reflect.TypeOf(key1).Name(), reflect.TypeOf(key2).Name())
+	}
+
+	if this.compare == nil {
+		return nil, errors.New("skiplist/SelectRange: comparator is not set (== nil)")
+	}
+
+	this.mutex.RLock()
+	defer this.mutex.RUnlock()
+
+	// Walk the levels and nodes until we find the node at the lowest level (0) that the comparator returns false
+	// E.g., if comparator is BuiltinLessThan, then we find the node at the lowest level s.t. node.key < key
+	// Then we walk from there to find all the nodes that have node.key == key
+	// We keep track of the last touched nodes at each level as selectFingers, and then we re-use the selectFingers
+	// so that we can get O(log k) where k is the distance between last searched key and current search key
+	// -- ok, so all this is done by updateSearchFingers
+
+	if err = this.updateSearchFingers(key1, this.selectFingers); err != nil {
+		return nil, errors.New("skiplist/SelectRange: error selecting nodes, " + err.Error())
+	}
+
+	iter = newIterator()
+	var res bool
+	for p := this.selectFingers[0].next[0]; p != nil; p = p.next[0] {
+		pk := p.GetKey()
+		if res, err = this.compare(pk, key2); err != nil {
+			// If there's error in comparing the keys, then return err
+			return nil, errors.New("skiplist/SelectRange: error comparing keys; " + err.Error())
+		} else if res || reflect.DeepEqual(pk, key2) {
+			iter.buf = append(iter.buf, p)
+			iter.count++
+		} else {
+			// Otherwise if the p.key is "after" key, after could mean greater or less, depending
+			// on the comparator, then we know we are done
+			break
+		}
+	}
+
+	return iter, nil
 }
 
-func (this *Skiplist) Level() int {
-	return this.level
+func (this *Skiplist) Delete(key interface{}) (iter *Iterator, err error) {
+	return this.DeleteRange(key, key)
 }
 
-func (this *Skiplist) RealCount() (c int) {
-	for p := this.headNode.next[0]; p != nil; {
+func (this *Skiplist) DeleteRange(key1, key2 interface{}) (iter *Iterator, err error) {
+	if key1 == nil || key2 == nil {
+		return nil, errors.New("skiplist/DeleteRange: key1 or key2 is nil")
+	}
+
+	if reflect.TypeOf(key1) != reflect.TypeOf(key2) {
+		return nil, fmt.Errorf("skiplist/DeleteRange: k1.(%s) and k2.(%s) have different types",
+			reflect.TypeOf(key1).Name(), reflect.TypeOf(key2).Name())
+	}
+
+	if this.compare == nil {
+		return nil, errors.New("skiplist/DeleteRange: comparator is not set (== nil)")
+	}
+
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+
+	// Walk the levels and nodes until we find the node at the lowest level (0) that the comparator returns false
+	// E.g., if comparator is BuiltinLessThan, then we find the node at the lowest level s.t. node.key < key
+	// Then we walk from there to find all the nodes that have node.key == key
+	// We keep track of the last touched nodes at each level as selectFingers, and then we re-use the selectFingers
+	// so that we can get O(log k) where k is the distance between last searched key and current search key
+	// -- ok, so all this is done by updateSearchFingers
+
+	if err = this.updateSearchFingers(key1, this.selectFingers); err != nil {
+		return nil, errors.New("skiplist/DeleteRange: error finding node; " + err.Error())
+	}
+
+	iter = newIterator()
+	var res bool
+	for p := this.selectFingers[0].next[0]; p != nil; p = p.next[0] {
+		pk := p.GetKey()
+		if res, err = this.compare(pk, key2); err != nil {
+			// If there's error in comparing the keys, then return err
+			return nil, errors.New("skiplist/DeleteRange: error comparing keys; " + err.Error())
+		} else if res || reflect.DeepEqual(pk, key2) {
+			iter.buf = append(iter.buf, p)
+			iter.count++
+
+			for i := 0; i < this.level; i++ {
+				if this.selectFingers[i].next[i] != p {
+					break
+				}
+				this.selectFingers[i].next[i] = p.next[i]
+			}
+
+			this.count--
+
+			for this.level > 1 && this.headNode.next[this.level-1] == nil {
+				this.level--
+			}
+		} else {
+			// Otherwise if the p.key is "after" key, after could mean greater or less, depending
+			// on the comparator, then we know we are done
+			break
+		}
+	}
+
+	return iter, nil
+}
+
+
+func (this *Skiplist) RealCount(i int) (c int) {
+	for p := this.headNode.next[i]; p != nil; {
 		if p != nil {
 			//log.Println("node =", p.record)
 			c++
-			p = p.next[0]
+			p = p.next[i]
 		}
 	}
 
 	return
 }
 
-func (this *Skiplist) PrintInfo() {
-	fmt.Println("Total nodes  :", this.Count())
-	fmt.Println("Real count   :", this.RealCount())
+func (this *Skiplist) PrintStats() {
+	fmt.Println("Real count   :", this.RealCount(0))
 	fmt.Println("Total levels :", this.Level())
 
 	for i := 0; i < this.level; i++ {
-		fmt.Println("Level", i, "count:", this.levelCount[i])
+		fmt.Println("Level", i, "count:", this.RealCount(i))
 	}
 
 }
