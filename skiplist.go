@@ -9,7 +9,6 @@ package skiplist
 import (
 	"math/rand"
 	"sync"
-	//"log"
 	"errors"
 	"math"
 	"fmt"
