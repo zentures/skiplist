@@ -61,3 +61,34 @@ Currently these built-in comparator functions work for all built-in Go types, in
 * int64, int32, int16, int8, int
 * float32, float64
 * unitptr
+
+### Performance
+
+```
+$ go test -v -bench=.
+=== RUN TestInsertIntAscending
+--- PASS: TestInsertIntAscending (0.32 seconds)
+=== RUN TestInsertIntDescending
+--- PASS: TestInsertIntDescending (0.35 seconds)
+=== RUN TestInsertTimeAscending
+--- PASS: TestInsertTimeAscending (0.20 seconds)
+=== RUN TestInsertTimeDescending
+--- PASS: TestInsertTimeDescending (0.11 seconds)
+=== RUN TestInsertStringAscending
+--- PASS: TestInsertStringAscending (0.47 seconds)
+=== RUN TestInsertStringDescending
+--- PASS: TestInsertStringDescending (0.48 seconds)
+PASS
+BenchmarkInsertTimeDescending    1000000              1252 ns/op
+BenchmarkInsertTimeAscending     1000000              2211 ns/op
+BenchmarkInsertInt               1000000              4722 ns/op
+BenchmarkInsertInt64             1000000              4759 ns/op
+BenchmarkInsertString            1000000              6995 ns/op
+ok      github.com/zhenjl/skiplist      20.195s
+```
+
+Notice the fastest time is BenchmarkInsertTimeDescending. This is because the keys for that test is generated using time.Now().UnixNano(), which is always ascending. And because the sort order of the skiplist is descending, so the new item is ALWAYS inserted at the front of the list. This happens to have the best case of O(1).
+
+The next best time is BenchmarkInsertTimeAscending. This is still pretty good, but because the sort order is ascending, so the new items are ALWAYS inserted at the end. This required the skiplist to walk all the levels so it took a bit longer.
+
+The other benchmarks should have the average O(log k) efficiency.
