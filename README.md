@@ -64,6 +64,8 @@ Currently these built-in comparator functions work for all built-in Go types, in
 
 ### Performance
 
+These numbers are from my Macbook Air 10.8.4 1.8GHz Intel Core i5 4GB 1600MHz DDR3
+
 ```
 $ go test -v -bench=.
 === RUN TestInsertIntAscending
