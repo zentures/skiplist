@@ -18,10 +18,10 @@ type Iterator struct {
 }
 
 func newIterator() *Iterator {
-	return &Iterator {
-		buf: make([]*node, 0, 50),
+	return &Iterator{
+		buf:   make([]*node, 0, 50),
 		count: 0,
-		cur: -1,
+		cur:   -1,
 	}
 }
 

@@ -7,8 +7,8 @@
 package skiplist
 
 type node struct {
-	next []*node
-	key interface{}
+	next  []*node
+	key   interface{}
 	value interface{}
 }
 

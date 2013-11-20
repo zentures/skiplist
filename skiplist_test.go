@@ -7,10 +7,10 @@
 package skiplist
 
 import (
-	"testing"
 	"fmt"
-	"strconv"
 	"math/rand"
+	"strconv"
+	"testing"
 	"time"
 )
 
@@ -205,16 +205,16 @@ func TestInsertStringDescending(t *testing.T) {
 func TestSelectInt(t *testing.T) {
 	list := New(BuiltinLessThan)
 
-	list.Insert(1,1)
-	list.Insert(1,2)
-	list.Insert(2,1)
-	list.Insert(2,2)
-	list.Insert(2,3)
-	list.Insert(2,4)
-	list.Insert(2,5)
-	list.Insert(1,3)
-	list.Insert(1,4)
-	list.Insert(1,5)
+	list.Insert(1, 1)
+	list.Insert(1, 2)
+	list.Insert(2, 1)
+	list.Insert(2, 2)
+	list.Insert(2, 3)
+	list.Insert(2, 4)
+	list.Insert(2, 5)
+	list.Insert(1, 3)
+	list.Insert(1, 4)
+	list.Insert(1, 5)
 
 	rIter, _ := list.Select(1)
 
@@ -236,20 +236,20 @@ func TestSelectInt(t *testing.T) {
 func TestSelectRangeInt(t *testing.T) {
 	list := New(BuiltinLessThan)
 
-	list.Insert(1,10)
-	list.Insert(1,20)
-	list.Insert(2,1)
-	list.Insert(2,2)
-	list.Insert(2,3)
-	list.Insert(2,4)
-	list.Insert(2,5)
-	list.Insert(1,30)
-	list.Insert(1,40)
-	list.Insert(1,50)
-	list.Insert(3,5)
-	list.Insert(4,5)
-	list.Insert(5,5)
-	list.Insert(6,5)
+	list.Insert(1, 10)
+	list.Insert(1, 20)
+	list.Insert(2, 1)
+	list.Insert(2, 2)
+	list.Insert(2, 3)
+	list.Insert(2, 4)
+	list.Insert(2, 5)
+	list.Insert(1, 30)
+	list.Insert(1, 40)
+	list.Insert(1, 50)
+	list.Insert(3, 5)
+	list.Insert(4, 5)
+	list.Insert(5, 5)
+	list.Insert(6, 5)
 
 	rIter, _ := list.SelectRange(1, 2)
 
@@ -298,16 +298,16 @@ func TestSelectRangeInt2(t *testing.T) {
 func TestDeleteInt(t *testing.T) {
 	list := New(BuiltinLessThan)
 
-	list.Insert(1,1)
-	list.Insert(1,2)
-	list.Insert(2,1)
-	list.Insert(2,2)
-	list.Insert(2,3)
-	list.Insert(2,4)
-	list.Insert(2,5)
-	list.Insert(1,3)
-	list.Insert(1,4)
-	list.Insert(1,5)
+	list.Insert(1, 1)
+	list.Insert(1, 2)
+	list.Insert(2, 1)
+	list.Insert(2, 2)
+	list.Insert(2, 3)
+	list.Insert(2, 4)
+	list.Insert(2, 5)
+	list.Insert(1, 3)
+	list.Insert(1, 4)
+	list.Insert(1, 5)
 
 	fmt.Println("---")
 	list.PrintStats()
@@ -364,14 +364,13 @@ func TestDeleteRangeInt2(t *testing.T) {
 		t.Fatal("still has nodes btwn 100 and 20000", rIter.Count())
 	}
 
-	if list.Count() != count - total {
+	if list.Count() != count-total {
 		t.Fatal("remaining count !=", list.Count(), count-total)
 	}
 
 	fmt.Println("---")
 	list.PrintStats()
 }
-
 
 func BenchmarkInsertTimeDescending(b *testing.B) {
 	list := New(BuiltinGreaterThan)
@@ -464,4 +463,3 @@ func BenchmarkInsertString(b *testing.B) {
 		}
 	}
 }
-

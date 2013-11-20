@@ -7,16 +7,16 @@
 package skiplist
 
 import (
-	"math/rand"
-	"sync"
 	"errors"
-	"math"
 	"fmt"
+	"math"
+	"math/rand"
 	"reflect"
+	"sync"
 )
 
 var (
-	DefaultMaxLevel int = 12
+	DefaultMaxLevel    int     = 12
 	DefaultProbability float32 = 0.25
 )
 
@@ -28,7 +28,7 @@ type Comparator func(k1, k2 interface{}) (bool, error)
 type Skiplist struct {
 	// Determining MaxLevel
 	// Reference: http://drum.lib.umd.edu/bitstream/1903/544/2/CS-TR-2286.1.pdf - section 2
-	// 
+	//
 	// > To get away from magic constants, we say that a fraction p of the nodes with level i pointers
 	// > also have level i+1 pointers.
 	//
@@ -68,23 +68,22 @@ type Skiplist struct {
 	// Comparison function
 	compare Comparator
 
-
 	mutex sync.RWMutex
 }
 
 func New(compare Comparator) *Skiplist {
 	l := DefaultMaxLevel
-	ip := int(math.Ceil(1/float64(DefaultProbability)))
+	ip := int(math.Ceil(1 / float64(DefaultProbability)))
 
 	return &Skiplist{
-		ip: ip,
-		maxLevel: l,
+		ip:            ip,
+		maxLevel:      l,
 		insertFingers: make([]*node, l),
 		selectFingers: make([]*node, l),
-		level: 1,
-		count: 0,
-		compare: compare,
-		headNode: newNode(l),
+		level:         1,
+		count:         0,
+		compare:       compare,
+		headNode:      newNode(l),
 	}
 }
 
@@ -108,7 +107,7 @@ func (this *Skiplist) SetProbability(p float32) (err error) {
 	if p > 1 {
 		p = 1
 	}
-	this.ip = int(math.Ceil(1/float64(p)))
+	this.ip = int(math.Ceil(1 / float64(p)))
 	return nil
 }
 
@@ -136,7 +135,7 @@ func (this *Skiplist) newNodeLevel() int {
 }
 
 func (this *Skiplist) updateSearchFingers(key interface{}, fingers []*node) (err error) {
-	startLevel := this.level-1
+	startLevel := this.level - 1
 	startNode := this.headNode
 
 	if fingers[0] != nil && fingers[0].key != nil {
@@ -382,7 +381,6 @@ func (this *Skiplist) DeleteRange(key1, key2 interface{}) (iter *Iterator, err e
 
 	return iter, nil
 }
-
 
 func (this *Skiplist) RealCount(i int) (c int) {
 	for p := this.headNode.next[i]; p != nil; {
