@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Zhen, LLC. http://zhen.io. All rights reserved.
+ * Copyright (c) 2013 Dataence, LLC. http://zhen.io. All rights reserved.
  * Use of this source code is governed by the Apache 2.0 license.
  *
  */
@@ -210,13 +210,13 @@ func (this *Skiplist) updateSearchFingers(key interface{}, fingers []*node) (err
 	return nil
 }
 
-func (this *Skiplist) Insert(key, value interface{}) (err error) {
+func (this *Skiplist) Insert(key, value interface{}) (*node, error) {
 	if key == nil {
-		return errors.New("skiplist/Insert: key is nil")
+		return nil, errors.New("skiplist/Insert: key is nil")
 	}
 
 	if this.compare == nil {
-		return errors.New("skiplist/Insert: comparator is not set (== nil)")
+		return nil, errors.New("skiplist/Insert: comparator is not set (== nil)")
 	}
 
 	// Create new node
@@ -233,8 +233,8 @@ func (this *Skiplist) Insert(key, value interface{}) (err error) {
 	// Search insertFingers will be updated with the rightmost element of each level that is left of the element
 	// that's greater than or equal to key.
 	// In other words, we are inserting the new node to the right of the search insertFingers.
-	if err = this.updateSearchFingers(key, this.insertFingers); err != nil {
-		return errors.New("skiplist/insert: cannot find insert position, " + err.Error())
+	if err := this.updateSearchFingers(key, this.insertFingers); err != nil {
+		return nil, errors.New("skiplist/insert: cannot find insert position, " + err.Error())
 	}
 
 	//log.Println("search insertFingers =", this.insertFingers)
@@ -261,7 +261,7 @@ func (this *Skiplist) Insert(key, value interface{}) (err error) {
 	// Adding to the count
 	this.count++
 
-	return nil
+	return n, nil
 }
 
 // Select a list of nodes that match the key. The results are stored in the array pointed to by results

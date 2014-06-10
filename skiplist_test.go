@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Zhen, LLC. http://zhen.io. All rights reserved.
+ * Copyright (c) 2013 Dataence, LLC. http://zhen.io. All rights reserved.
  * Use of this source code is governed by the Apache 2.0 license.
  *
  */
@@ -24,7 +24,7 @@ func TestInsertIntAscending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -56,7 +56,7 @@ func TestInsertIntDescending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -88,7 +88,7 @@ func TestInsertTimeAscending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -120,7 +120,7 @@ func TestInsertTimeDescending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -153,7 +153,7 @@ func TestInsertStringAscending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -183,7 +183,7 @@ func TestInsertStringDescending(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -279,7 +279,7 @@ func TestSelectRangeInt2(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -341,7 +341,7 @@ func TestDeleteRangeInt2(t *testing.T) {
 	}
 
 	for i := 0; i < count; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -383,7 +383,7 @@ func BenchmarkInsertTimeDescending(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -404,7 +404,7 @@ func BenchmarkInsertTimeAscending(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -424,7 +424,7 @@ func BenchmarkInsertInt(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -440,7 +440,7 @@ func BenchmarkInsertInt64(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -458,7 +458,7 @@ func BenchmarkInsertString(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		if err := list.Insert(keys[i], i); err != nil {
+		if _, err := list.Insert(keys[i], i); err != nil {
 			b.Fatal(err)
 		}
 	}
