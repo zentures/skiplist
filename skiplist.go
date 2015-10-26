@@ -21,8 +21,6 @@ import (
 	"math/rand"
 	"reflect"
 	"sync"
-
-	"github.com/dataence/compare"
 )
 
 var (
@@ -73,12 +71,12 @@ type Skiplist struct {
 	// Comparison function for the node keys.
 	// For ascending order - if k1 < k2 return true; else return false
 	// For descending order - if k1 > k2 return true; else return false
-	compare compare.Comparator
+	compare Comparator
 
 	mutex sync.RWMutex
 }
 
-func New(compare compare.Comparator) *Skiplist {
+func New(compare Comparator) *Skiplist {
 	l := DefaultMaxLevel
 	ip := int(math.Ceil(1 / float64(DefaultProbability)))
 
@@ -94,7 +92,7 @@ func New(compare compare.Comparator) *Skiplist {
 	}
 }
 
-func (this *Skiplist) SetCompare(compare compare.Comparator) (err error) {
+func (this *Skiplist) SetCompare(compare Comparator) (err error) {
 	if compare == nil {
 		return errors.New("skiplist/SetCompare: trying to set comparator to nil")
 	}

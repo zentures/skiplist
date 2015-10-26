@@ -20,13 +20,11 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/dataence/compare"
 )
 
 func TestInsertIntAscending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int, count)
 
 	for i := 0; i < count; i++ {
@@ -58,7 +56,7 @@ func TestInsertIntAscending(t *testing.T) {
 
 func TestInsertIntDescending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinGreaterThan)
+	list := New(BuiltinGreaterThan)
 	keys := make([]int, count)
 
 	for i := 0; i < count; i++ {
@@ -90,7 +88,7 @@ func TestInsertIntDescending(t *testing.T) {
 
 func TestInsertTimeAscending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int64, count)
 
 	for i := 0; i < count; i++ {
@@ -122,7 +120,7 @@ func TestInsertTimeAscending(t *testing.T) {
 
 func TestInsertTimeDescending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinGreaterThan)
+	list := New(BuiltinGreaterThan)
 	keys := make([]int64, count)
 
 	for i := 0; i < count; i++ {
@@ -154,7 +152,7 @@ func TestInsertTimeDescending(t *testing.T) {
 
 func TestInsertStringAscending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]string, count)
 
 	for i := 0; i < count; i++ {
@@ -176,7 +174,7 @@ func TestInsertStringAscending(t *testing.T) {
 
 	a := ""
 	for p := list.headNode.next[0]; p != nil; p = p.next[0] {
-		if greater, _ := compare.BuiltinGreaterThan(a, p.key); greater {
+		if greater, _ := BuiltinGreaterThan(a, p.key); greater {
 			t.Fatal(a, " >", p.key.(string))
 		}
 	}
@@ -184,7 +182,7 @@ func TestInsertStringAscending(t *testing.T) {
 
 func TestInsertStringDescending(t *testing.T) {
 	count := 100000
-	list := New(compare.BuiltinGreaterThan)
+	list := New(BuiltinGreaterThan)
 	keys := make([]string, count)
 
 	for i := 0; i < count; i++ {
@@ -206,14 +204,14 @@ func TestInsertStringDescending(t *testing.T) {
 
 	a := "zzzz"
 	for p := list.headNode.next[0]; p != nil; p = p.next[0] {
-		if less, _ := compare.BuiltinLessThan(a, p.key); less {
+		if less, _ := BuiltinLessThan(a, p.key); less {
 			t.Fatal(a, " <", p.key.(string))
 		}
 	}
 }
 
 func TestSelectInt(t *testing.T) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 
 	list.Insert(1, 1)
 	list.Insert(1, 2)
@@ -244,7 +242,7 @@ func TestSelectInt(t *testing.T) {
 }
 
 func TestSelectRangeInt(t *testing.T) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 
 	list.Insert(1, 10)
 	list.Insert(1, 20)
@@ -277,7 +275,7 @@ func TestSelectRangeInt(t *testing.T) {
 
 func TestSelectRangeInt2(t *testing.T) {
 	count := 10000
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int, count)
 	total := 0
 
@@ -306,7 +304,7 @@ func TestSelectRangeInt2(t *testing.T) {
 }
 
 func TestDeleteInt(t *testing.T) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 
 	list.Insert(1, 1)
 	list.Insert(1, 2)
@@ -339,7 +337,7 @@ func TestDeleteInt(t *testing.T) {
 
 func TestDeleteRangeInt2(t *testing.T) {
 	count := 10000
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int, count)
 	total := 0
 
@@ -383,7 +381,7 @@ func TestDeleteRangeInt2(t *testing.T) {
 }
 
 func BenchmarkInsertTimeDescending(b *testing.B) {
-	list := New(compare.BuiltinGreaterThan)
+	list := New(BuiltinGreaterThan)
 	keys := make([]int64, b.N)
 
 	for i := 0; i < b.N; i++ {
@@ -404,7 +402,7 @@ func BenchmarkInsertTimeDescending(b *testing.B) {
 }
 
 func BenchmarkInsertTimeAscending(b *testing.B) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int64, b.N)
 
 	for i := 0; i < b.N; i++ {
@@ -425,7 +423,7 @@ func BenchmarkInsertTimeAscending(b *testing.B) {
 }
 
 func BenchmarkInsertInt(b *testing.B) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int, b.N)
 	for i := 0; i < b.N; i++ {
 		keys[i] = rand.Intn(b.N)
@@ -441,7 +439,7 @@ func BenchmarkInsertInt(b *testing.B) {
 }
 
 func BenchmarkInsertInt64(b *testing.B) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]int64, b.N)
 	for i := 0; i < b.N; i++ {
 		keys[i] = int64(rand.Intn(b.N))
@@ -457,7 +455,7 @@ func BenchmarkInsertInt64(b *testing.B) {
 }
 
 func BenchmarkInsertString(b *testing.B) {
-	list := New(compare.BuiltinLessThan)
+	list := New(BuiltinLessThan)
 	keys := make([]string, b.N)
 
 	for i := 0; i < b.N; i++ {
